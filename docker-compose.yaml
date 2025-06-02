@@ -1,0 +1,153 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: parcel_db
+      MYSQL_USER: parcel_user
+      MYSQL_PASSWORD: parcel_pass
+    ports:
+      - "3306:3306"
+    networks:
+      - parcel-service-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p=rootpass"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    networks:
+      - parcel-service-net
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - parcel-service-net
+
+  init-rabbitmq:
+    build:
+      context: .
+      dockerfile: ./docker/init_containers/Dockerfile.init_rabbit
+    depends_on:
+      - rabbitmq
+    networks:
+      - parcel-service-net
+    restart: "no"
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      EXCHANGE_NAME: parcel_exchange
+      EXCHANGE_TYPE: topic
+      QUEUE_NAME: parcel_registry_queue
+      ROUTING_KEYS: '["parcel.*"]'
+
+  init-migrations:
+    build:
+      context: .
+      dockerfile: ./docker/init_containers/Dockerfile.migrations
+    container_name: migrations
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - parcel-service-net
+    env_file:
+      - .env
+    restart: "no"
+
+  mongo:
+    image: mongo:6
+    container_name: mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpass
+    networks:
+      - parcel-service-net
+
+  parcel_service:
+    build:
+      context: .
+      dockerfile: ./docker/service/Dockerfile.parcel_service
+    container_name: parcel_service
+    ports:
+      - "8000:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+      mongo:
+        condition: service_started
+    env_file:
+      - .env
+
+    networks:
+      - parcel-service-net
+
+  delivery_calculation_worker:
+    build:
+      context: .
+      dockerfile: ./docker/service/Dockerfile.delivery_calculation_worker
+    container_name: delivery_calculation_worker
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+      mongo:
+        condition: service_started
+    env_file:
+      - .env
+
+    networks:
+      - parcel-service-net
+
+  outbox_publisher:
+    build:
+      context: .
+      dockerfile: ./docker/service/Dockerfile.outbox_publisher
+    container_name: outbox_publisher
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+    restart: always
+    env_file:
+      - .env
+    environment:
+      PUBLISHER_BATCH_SIZE: 50
+      PUBLISHER_SLEEP_INTERVAL: 5
+
+    networks:
+      - parcel-service-net
+
+networks:
+  parcel-service-net:
+    driver: bridge
+

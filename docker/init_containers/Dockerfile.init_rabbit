@@ -1,0 +1,10 @@
+FROM python:3.11-slim
+LABEL authors="darkalastor"
+
+WORKDIR /app
+
+COPY ./src/containers/init_rabbitmq.py .
+
+RUN pip install --no-cache-dir aio-pika pydantic-settings
+
+CMD ["python", "init_rabbitmq.py"]

@@ -1,0 +1,20 @@
+FROM python:3.10-slim
+
+RUN apt-get update && apt-get install -y gcc libpq-dev && apt-get clean
+
+RUN pip install --upgrade pip && pip install poetry
+
+WORKDIR /app
+
+COPY pyproject.toml poetry.lock* /app/
+
+# Устанавливаем зависимости: default + parcel
+RUN poetry config virtualenvs.create false && \
+    poetry install --no-root --with parcel
+
+COPY ./src/parcel_service /app/src/parcel_service
+
+# Запуск Uvicorn-сервера
+CMD ["poetry", "run", "uvicorn", "src.parcel_service.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+

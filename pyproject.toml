@@ -4,10 +4,67 @@ version = "0.1.0"
 description = ""
 authors = ["Alastor <none@test.local>"]
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.10"
+loguru = "^0.7.3"
+redis = "^6.2.0"
+sqlalchemy = "^2.0.41"
+pydantic = "^2.11.5"
+pydantic-settings = "^2.9.1"
+asyncpg = "^0.30.0"
+aiomysql = "^0.2.0"
+motor = "^3.7.1"
+aiohttp = "^3.12.6"
+certifi = "^2025.4.26"
 
+
+[tool.poetry.group.parcel.dependencies]
+fastapi = "^0.115.12"
+uvicorn = "^0.34.2"
+slowapi = "^0.1.9"
+prometheus-fastapi-instrumentator = "^7.1.0"
+prometheus-client = "^0.22.0"
+cryptography = "^45.0.3"
+
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.11.12"
+mypy = "^1.16.0"
+bandit = "^1.8.3"
+pytest = "^8.3.5"
+pytest-asyncio = "^1.0.0"
+locust = "^2.37.6"
+alembic = "^1.16.1"
+aiosqlite = "^0.21.0"
+
+
+[tool.poetry.group.event_streamer.dependencies]
+aio-pika = "^9.5.5"
+
+[tool.ruff]
+line-length = 150
+target-version = "py39"
+exclude = ["migrations", "__pycache__"]
+fix = true
+ignore = ["B008"]
+
+[tool.ruff.lint]
+extend-select = [
+  "E",   # pycodestyle errors
+  "F",   # pyflakes
+  "I",   # isort
+  "C90", # mccabe (complexity)
+  "B",   # bugbear
+  "SIM", # simplify
+  "TCH", # type-checking imports
+  "C4",  # comprehensions
+  "RUF", # ruff-specific
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 15
 
 [build-system]
 requires = ["poetry-core"]

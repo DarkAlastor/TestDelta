@@ -1,0 +1,20 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+    gcc libpq-dev build-essential curl && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Копируем зависимости и устанавливаем их
+COPY pyproject.toml poetry.lock ./
+RUN pip install poetry && poetry config virtualenvs.create false \
+    && poetry install --no-root --with parcel --with event_streamer
+
+
+COPY ./src/delivery_calculation_worker /app/src/delivery_calculation_worker
+
+ENV PYTHONPATH=/app
+
+
+CMD ["poetry", "run", "python3", "src/delivery_calculation_worker/main.py"]
