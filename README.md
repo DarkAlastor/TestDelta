@@ -109,6 +109,7 @@
 - разделить deocker контнере на build и prod 
 - выправить код с mypy + ruff
 - не успел сегенировать документацию sphinx
+- не успел допилить кастомную докумментацию дя скрытия технических тегов 
 
 Для более детального разбора в папке docs храниться png изображение архитетуры там есть схемы и описанна принятых решений
 упор был сделан на устойчивость системы схему можно загрузить на этом сайте и посмотреть более детально `https://app.diagrams.net/`, 
@@ -117,3 +118,52 @@
 Запустить приложение можно через `docker-compose up -d build` мигрцаии и иницализация rabbit mq собраны через init-containers
 
 Для тестирования используей сперва ручку session-id для получения x-session-id. 
+
+Пример env файла
+```
+# === App ===
+APP_API_VERSION=v1
+APP_DEBUG=false
+
+# === Meta App ===
+META_TITLE_APP=Deliviry Service
+META_VERSION_APP=1.0.0
+META_DESCRIPTION_APP=Сервис международной доставки
+META_DOCS_URL_APP=/docs
+META_REDOC_URL_APP=/redoc
+META_OPENAPI_URL_APP=/openapi.json
+
+# === Logging ===
+LOGGING_ENABLED=true
+LOGGING_LEVEL=DEBUG
+LOGGING_FRIENDLY_ASC=true
+LOGGING_BACKTRACE=true
+
+# === Database ===
+DATABASE_TYPE=mysql
+DATABASE_HOST=mysql
+DATABASE_PORT=3306
+DATABASE_USER=parcel_user
+DATABASE_PASSWORD=parcel_pass
+DATABASE_NAME=parcel_db
+
+# === Redis ===
+REDIS_URL=redis://redis:6379
+REDIS_MAX_CONNECTIONS=20
+
+# === RabbitMQ ===
+RABBITMQ_URL= amqp://guest:guest@rabbitmq:5672/
+RABBITMQ_ROUTING_KEY= parcel.*
+RABBITMQ_EXCHANGE= parcel_exchange
+RABBITMQ_QUEUE= parcel_registry_queue
+RABBITMQ_PREFETCH_COUNT= 10
+RABBITMQ_CONSUMER_TAG= delivery_worker
+RABBITMQ_DURABLE= "true"
+RABBITMQ_AUTO_ACK= "false"
+
+
+# === MongoDB ===
+MONGO_URI = mongodb://root:rootpass@mongo:27017
+MONGO_DB_NAME = delivery_logs
+MONGO_COLLECTION_NAME = calculations
+```
