@@ -19,14 +19,14 @@ def build_session_cash_key(session_id: str = "*") -> str:
     """
     return f"x-session-id:{session_id}"
 
-def build_redis_cash_cash_key(*args: str) -> str:
+def build_redis_cache_key(*args: str) -> str:
     """
     Формирует уникальный ключ для кеша Redis на основе переданных аргументов.
 
     Каждый аргумент добавляется в ключ через двоеточие.
 
     Пример:
-        build_redis_cash_cash_key("parcel", "session123", "parcel456")
+        build_redis_cache_key("parcel", "session123", "parcel456")
         → "cache:parcel:session123:parcel456"
 
     :param args: Произвольное количество строк, составляющих части ключа.
@@ -57,7 +57,7 @@ def get_redis_session() -> Redis:
     return AppContainer.redis_session()
 
 
-def get_redis_cash() -> Redis:
+def get_redis_cache() -> Redis:
     """
     Получает экземпляр Redis для кеширования данных.
 

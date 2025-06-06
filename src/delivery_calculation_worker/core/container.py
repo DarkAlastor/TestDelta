@@ -7,7 +7,7 @@ from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from src.delivery_calculation_worker.core.config import Settings
 from src.delivery_calculation_worker.db.redis.redis import create_redis_pool
 from src.delivery_calculation_worker.messaging.consumer import RabbitMQConsumer
-from src.delivery_calculation_worker.strategies.stratagy import STRATEGY_REGISTRY
+from src.delivery_calculation_worker.strategies.strategy import STRATEGY_REGISTRY
 from src.delivery_calculation_worker.messaging.handle_message import MessageHandler
 from src.delivery_calculation_worker.db.sql.engine import create_db_engine, create_session_factory
 

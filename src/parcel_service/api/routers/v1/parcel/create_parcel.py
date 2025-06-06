@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, Header
 from redis import Redis
 
 from src.parcel_service.api.deps.parcel_deps import get_uc_registry
-from src.parcel_service.api.deps.shared_deps import get_redis_cash, get_uow, build_redis_cash_cash_key
+from src.parcel_service.api.deps.shared_deps import get_redis_cache, get_uow, build_redis_cache_key
 from src.parcel_service.api.schemas.parcel import ParcelCreatedResponse, ParcelCreateSchema
 from src.parcel_service.api.schemas.error import ErrorResponse
 from src.parcel_service.domain.dto.dto_create_parcel import ParcelData, ParcelResult
@@ -30,7 +30,7 @@ async def registry_parcel(
         parcel: ParcelCreateSchema,
         x_session_id: str = Header(...),
         uow: IUnitOfWork = Depends(get_uow),
-        redis: Redis = Depends(get_redis_cash),
+        redis: Redis = Depends(get_redis_cache),
         use_case: IUseCase = Depends(get_uc_registry)
 ) -> ParcelCreatedResponse:
     """
@@ -68,7 +68,7 @@ async def registry_parcel(
     result: ParcelResult = await use_case(dto=dto_parcel, uow=uow, deps=None)
 
     # Кеширование DTO в Redis
-    cache_key = build_redis_cash_cash_key("parcels", x_session_id, result.parcel_id)
+    cache_key = build_redis_cache_key("parcels", x_session_id, result.parcel_id)
 
     # Обрабатываем кеш
     try:
