@@ -1,5 +1,5 @@
 import pytest
-from src.parcel_service.infrastructure.repository.parcel_combain import ParcelCombinedRepository
+from src.parcel_service.infrastructure.repository.parcel_combine import ParcelCombinedRepository
 from src.parcel_service.application.use_cases.parcels.get_parcels_list import GetParcelsListUseCase
 from src.parcel_service.domain.dto.dto_parcel_query import ParcelQueryList
 

@@ -7,7 +7,7 @@ from loguru import logger
 from redis import Redis
 
 from src.parcel_service.api.deps.parcel_deps import get_uc_parcels_for_id, get_uc_parcels_list_for_session_id, get_uc_parcels_all_types
-from src.parcel_service.api.deps.shared_deps import get_redis_cash, get_uow, build_redis_cash_cash_key
+from src.parcel_service.api.deps.shared_deps import get_redis_cache, get_uow, build_redis_cache_key
 from src.parcel_service.api.schemas.parcel import ParcelDetailResponse, ParcelListResponse
 from src.parcel_service.api.schemas.parcel_types import ParcelTypeResponse
 from src.parcel_service.domain.dto.dto_parcel_query import ParcelDetailQuery, ParcelDetailResult, ParcelQueryList
@@ -34,7 +34,7 @@ async def get_all_parcels(
     has_delivery_price: bool = Query(True),
     limit: int = Query(default=20, ge=1),
     offset: int = Query(default=0, ge=0),
-    redis: Redis = Depends(get_redis_cash),
+    redis: Redis = Depends(get_redis_cache),
     uow: IUnitOfWork = Depends(get_uow),
     use_case: IUseCase = Depends(get_uc_parcels_list_for_session_id)
 ) -> ParcelListResponse:
@@ -159,7 +159,7 @@ async def get_parcel_detail(
     x_session_id: str = Header(...),
     uow: IUnitOfWork = Depends(get_uow),
     use_case: IUseCase = Depends(get_uc_parcels_for_id),
-    redis: Redis = Depends(get_redis_cash)
+    redis: Redis = Depends(get_redis_cache)
 ) -> ParcelDetailResponse:
     """
     Возвращает детальную информацию о посылке по её идентификатору.
@@ -178,7 +178,7 @@ async def get_parcel_detail(
     """
 
     # Сначала проверяем кеш
-    cache_key = build_redis_cash_cash_key("parcels", x_session_id, str(parcel_id))
+    cache_key = build_redis_cache_key("parcels", x_session_id, str(parcel_id))
 
     cached = await redis.get(cache_key)
     logger.debug(f"Проверка кеша | key={cache_key}")
@@ -233,7 +233,7 @@ async def get_parcel_detail(
 )
 async def get_parcel_types(
     uow: IUnitOfWork = Depends(get_uow),
-    redis: Redis = Depends(get_redis_cash),
+    redis: Redis = Depends(get_redis_cache),
     use_case: IUseCase = Depends(get_uc_parcels_all_types)
 ) -> List[ParcelTypeResponse]:
     """
@@ -257,7 +257,7 @@ async def get_parcel_types(
     """
 
     # Сначала проверяем кеш
-    cache_key = build_redis_cash_cash_key("parcel_types","all")
+    cache_key = build_redis_cache_key("parcel_types","all")
 
     # Проверка кэша
     cached = await redis.get(cache_key)
